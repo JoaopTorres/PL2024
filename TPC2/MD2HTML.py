@@ -1,10 +1,10 @@
 import sys
 import re
 
-# f = open("C:\\Users\\joaop\\Documents\\Uni\\Y3-S2\\PL\\TPC1\\emd.csv", "r")
-# h = f.readline()
+f = open("C:\\Users\\joaop\\Documents\\Uni\\Y3-S2\\PL\\PL2024\\TPC2\\out.txt", "w")
+i = open("C:\\Users\\joaop\\Documents\\Uni\\Y3-S2\\PL\\PL2024\\TPC2\\examples.txt", "r")
 
-for l in sys.stdin:
+for l in i:
     l = re.sub(r"[*]{2}(.*)[*]{2}", r"<b>\1</b>", l)
     l = re.sub(r"[*]{1}(.*)[*]{1}", r"<i>\1</i>", l)
 
@@ -17,4 +17,4 @@ for l in sys.stdin:
 
     l = re.sub(r'[0123456789]*[.][ ](.*)', r"<ol> <li>\1</li> </ol>", l)
 
-    print(l)
+    f.write(l)
