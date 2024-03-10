@@ -1,5 +1,3 @@
-import re
-
 import ply.lex as lex
 
 tokens = (
@@ -9,7 +7,8 @@ tokens = (
     'LIST',
     'BUY',
     'PRODID',
-    'CHANGE'
+    'CHANGE',
+    'QUIT'
 )
 
 t_EURO = r'[12]\s*€'
@@ -17,8 +16,9 @@ t_CENT = r'(50|20|10|5)\s*c'
 t_INSERT = r'insert'
 t_LIST = r'list'
 t_BUY = r'buy'
-T_PRODID = r'[0-9]+'
+t_PRODID = r'[A-Z]-[1-9]?[0-9]+'
 t_CHANGE = r'change'
+t_QUIT = r'quit'
 
 t_ignore = ' \t'
 
@@ -35,11 +35,11 @@ total_money = 0
 mode = 'N'
 
 products = {
-    1: {'name': 'Soda', 'cost': 130},
-    2: {'name': 'Chips', 'cost': 180},
-    3: {'name': 'Chocolate Bar', 'cost': 120},
-    4: {'name': 'Water', 'cost': 70},
-    5: {'name': 'M&M', 'cost': 120}
+    'B-1': {'name': 'Soda', 'cost': 1.30},
+    'A-1': {'name': 'Chips', 'cost': 1.80},
+    'A-2': {'name': 'Chocolate Bar', 'cost': 1.20},
+    'B-2': {'name': 'Water', 'cost': 0.70},
+    'A-3': {'name': 'M&M', 'cost': 1.20}
     # Add more products as needed
 }
 
@@ -54,15 +54,15 @@ def listProducts():
 
 
 def buyProd(prodID):
+    global total_money
     if prodID in products:
-        pPrice = products[prodID]['cost']
+        pPrice = products[prodID]['cost'] * 100
         if total_money > pPrice:
             total_money -= pPrice
             print('Tak..clack..THUD.\n')
             print('Your %s has fallen.\nPick it up' % (products[prodID]['name']))
-            print('You have ' + str(total_money) + '€')
         else:
-            print('You have insuficient funds.')
+            print('You have insufficient funds.')
 
 
 def calcChange():
@@ -84,22 +84,23 @@ def calcChange():
         elif total_money >= 10:
             total_money -= 10
             ans += '10c '
-    print(ans)
+    print("Change: " + ans)
 
 
-while True:
+cicleB = True
+
+while cicleB:
     mode = 'N'
-    user_input = input("Enter a command (insert, list, buy, change): ")
+    print("Available: " + str(total_money / 100) + "€")
+    user_input = input("Enter a command (insert, list, buy, change, quit): ")
     lexer.input(user_input)
     for tokens in lexer:
         if tokens.type == 'INSERT':
             mode = 'I'
         elif tokens.type == 'EURO' and mode == 'I':
             insertMoney(int(tokens.value[:-1]) * 100)
-            print(total_money)
         elif tokens.type == 'CENT' and mode == 'I':
             insertMoney(int(tokens.value[:-1]))
-            print("Total->" + str(total_money))
         elif tokens.type == 'LIST':
             listProducts()
         elif tokens.type == 'BUY':
@@ -108,3 +109,15 @@ while True:
             buyProd(tokens.value)
         elif tokens.type == 'CHANGE':
             calcChange()
+            mode = 'C'
+        elif tokens.type == 'QUIT' and mode == 'C':
+            print('Thank you, goodbye')
+            cicleB = False
+        elif tokens.type == 'QUIT' and mode != 'C' and total_money > 0:
+            print('Kaching, kachingKaching....')
+            calcChange()
+            print('Thank you, goodbye')
+            cicleB = False
+        elif tokens.type == 'QUIT' and mode != 'C' and total_money == 0:
+            print('Thank you, goodbye')
+            cicleB = False
