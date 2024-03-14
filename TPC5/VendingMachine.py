@@ -34,12 +34,21 @@ total_money = 0
 
 mode = 'N'
 
+coinStrorage = {
+    '2': {'quant': 0},
+    '1': {'quant': 0},
+    '50': {'quant': 0},
+    '20': {'quant': 0},
+    '10': {'quant': 1}
+
+}
+
 products = {
-    'B-1': {'name': 'Soda', 'cost': 1.30},
-    'A-1': {'name': 'Chips', 'cost': 1.80},
-    'A-2': {'name': 'Chocolate Bar', 'cost': 1.20},
-    'B-2': {'name': 'Water', 'cost': 0.70},
-    'A-3': {'name': 'M&M', 'cost': 1.20}
+    'B-1': {'name': 'Soda', 'cost': 1.30, 'quant': 5},
+    'A-1': {'name': 'Chips', 'cost': 1.80, 'quant': 10},
+    'A-2': {'name': 'Chocolate Bar', 'cost': 1.20, 'quant': 6},
+    'B-2': {'name': 'Water', 'cost': 0.70, 'quant': 7},
+    'A-3': {'name': 'M&M', 'cost': 1.20, 'quant': 12}
     # Add more products as needed
 }
 
@@ -47,43 +56,68 @@ products = {
 def insertMoney(coin):
     global total_money
     total_money += coin
+    if coin / 100 > 1:
+        coinStrorage[str(int(coin / 100))]['quant'] += 1
+    else:
+        coinStrorage[str(coin)]['quant'] += 1
 
 
 def listProducts():
-    print(products)
+    print(coinStrorage)
+    for prodID in products:
+        if products[prodID]['quant'] > 0:
+            print("                ID:" + prodID + " | Name:" + products[prodID]['name'] + " | cost:" + str(
+                products[prodID]['cost']))
+        else:
+            print("--UNAVAILABLE-- ID:" + prodID + " | Name:" + products[prodID]['name'] + " | cost:" + str(
+                products[prodID]['cost']))
 
 
 def buyProd(prodID):
     global total_money
     if prodID in products:
-        pPrice = products[prodID]['cost'] * 100
-        if total_money > pPrice:
-            total_money -= pPrice
-            print('Tak..clack..THUD.\n')
-            print('Your %s has fallen.\nPick it up' % (products[prodID]['name']))
+        pCount = products[prodID]['quant']
+        if pCount > 0:
+            pPrice = products[prodID]['cost'] * 100
+            if total_money > pPrice:
+                total_money -= pPrice
+                products[prodID]['quant'] -= 1
+                print('Tak..clack..THUD.\n')
+                print('Your %s has fallen.\nPick it up' % (products[prodID]['name']))
+            else:
+                print('You have insufficient funds.')
         else:
-            print('You have insufficient funds.')
+            print("Product has no stock left.")
 
 
 def calcChange():
     ans = ''
+    noMoreChange = True
     global total_money
-    while total_money > 0:
-        if total_money >= 200:
+    while total_money > 0 and noMoreChange:
+        if total_money >= 200 and coinStrorage['2']['quant'] > 0:
             total_money -= 200
+            coinStrorage['2']['quant'] -= 1
             ans += '2€ '
-        elif total_money >= 100:
+        elif total_money >= 100 and coinStrorage['1']['quant'] > 0:
             total_money -= 100
+            coinStrorage['1']['quant'] -= 1
             ans += '1€ '
-        elif total_money >= 50:
+        elif total_money >= 50 and coinStrorage['50']['quant'] > 0:
             total_money -= 50
+            coinStrorage['50']['quant'] -= 1
             ans += '50c '
-        elif total_money >= 20:
+        elif total_money >= 20 and coinStrorage['20']['quant'] > 0:
             total_money -= 20
+            coinStrorage['20']['quant'] -= 1
             ans += '20c '
-        elif total_money >= 10:
+        elif total_money >= 10 and coinStrorage['10']['quant'] > 0:
             total_money -= 10
+            coinStrorage['10']['quant'] -= 1
             ans += '10c '
+        elif total_money >= 10 and coinStrorage['10']['quant'] == 0:
+            ans += '. Troco incompleto, fica a faltar: ' + str(total_money / 100) + 'c'
+            noMoreChange = False
     print("Change: " + ans)
 
 
